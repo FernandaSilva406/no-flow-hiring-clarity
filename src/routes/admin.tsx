@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink } from "lucide-react";
+import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
+import { useHasRole } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -11,8 +12,50 @@ export const Route = createFileRoute("/admin")({
       { name: "description", content: "Indicadores estratégicos de Talent Acquisition." },
     ],
   }),
-  component: AdminPage,
+  ssr: false,
+  component: AdminGuard,
 });
+
+function AdminGuard() {
+  const { hasRole, user, loading } = useHasRole("talent_acquisition");
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <NoFlowNav />
+        <div className="mx-auto max-w-6xl px-6 py-24 text-center text-sm text-muted-foreground">
+          Carregando…
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/auth" />;
+
+  if (!hasRole) {
+    return (
+      <div className="min-h-screen">
+        <NoFlowNav />
+        <main className="mx-auto max-w-md px-6 py-24 animate-fade-up">
+          <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-soft">
+            <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-brand-pink/10 text-brand-pink">
+              <Lock className="size-5" />
+            </div>
+            <h1 className="mt-4 text-xl font-bold tracking-tight">Acesso restrito</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Este painel é exclusivo do time de Talent Acquisition.
+            </p>
+            <Link to="/" className="mt-6 inline-block text-xs font-semibold text-brand-lilac hover:underline">
+              ← Voltar para busca
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return <AdminPage />;
+}
 
 const STAGE_TIMES = [
   { stage: "Abertura", days: 1 },

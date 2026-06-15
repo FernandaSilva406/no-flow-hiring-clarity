@@ -28,7 +28,7 @@ export const Route = createFileRoute("/vaga/$codigo")({
       </div>
     </div>
   ),
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: { error: Error }) => (
     <div className="p-12 text-center text-destructive">{error.message}</div>
   ),
 });

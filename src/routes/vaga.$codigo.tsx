@@ -36,7 +36,7 @@ export const Route = createFileRoute("/vaga/$codigo")({
 function VagaPage() {
   const { vaga } = Route.useLoaderData();
   const totalEtapas = vaga.etapas.length;
-  const concluidas = vaga.etapas.filter((e) => e.status === "concluido").length;
+  const concluidas = vaga.etapas.filter((e: Etapa) => e.status === "concluido").length;
   const progresso = Math.round(((concluidas + 0.5) / totalEtapas) * 100);
 
   return (

@@ -435,7 +435,7 @@ function MinhasVagas() {
               {vagas.map((v) => {
                 const open = openComentarios === v.id;
                 return (
-                  <FragmentRow key={v.id}>
+                  <Fragment key={v.id}>
                     <tr className="border-t border-border hover:bg-muted/30">
                       <td className="px-6 py-3 font-mono text-xs text-brand-lilac">
                         <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">{v.codigo}</Link>
@@ -480,7 +480,7 @@ function MinhasVagas() {
                         </td>
                       </tr>
                     )}
-                  </FragmentRow>
+                  </Fragment>
                 );
               })}
             </tbody>

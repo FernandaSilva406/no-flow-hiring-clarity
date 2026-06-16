@@ -246,18 +246,14 @@ function SidePanel({ vaga }: { vaga: Vaga }) {
       </div>
 
       <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Comentários internos</h3>
-        {vaga.comentarios.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sem comentários ainda.</p>
+        <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-muted-foreground">Comentários</h3>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Deixe um comentário para o time de TA. <strong>Identifique-se com seu nome</strong> — comentários anônimos não serão enviados.
+        </p>
+        {(vaga as VagaWithId).id ? (
+          <VagaComentarios vagaId={(vaga as VagaWithId).id!} mode="gestor" />
         ) : (
-          <ul className="space-y-4">
-            {vaga.comentarios.map((c, i) => (
-              <li key={i} className="text-sm">
-                <p className="text-foreground/80 italic">"{c.texto}"</p>
-                <p className="mt-1 text-xs text-muted-foreground">— {c.autor} · {c.quando}</p>
-              </li>
-            ))}
-          </ul>
+          <p className="text-sm text-muted-foreground">Comentários indisponíveis para esta vaga.</p>
         )}
       </div>
     </aside>

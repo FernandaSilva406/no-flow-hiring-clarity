@@ -35,6 +35,41 @@ export type Database = {
         }
         Relationships: []
       }
+      vaga_comentarios: {
+        Row: {
+          autor: string
+          created_at: string
+          id: string
+          origem: Database["public"]["Enums"]["comentario_origem"]
+          texto: string
+          vaga_id: string
+        }
+        Insert: {
+          autor: string
+          created_at?: string
+          id?: string
+          origem: Database["public"]["Enums"]["comentario_origem"]
+          texto: string
+          vaga_id: string
+        }
+        Update: {
+          autor?: string
+          created_at?: string
+          id?: string
+          origem?: Database["public"]["Enums"]["comentario_origem"]
+          texto?: string
+          vaga_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaga_comentarios_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vagas: {
         Row: {
           area: string | null
@@ -104,6 +139,7 @@ export type Database = {
     }
     Enums: {
       app_role: "talent_acquisition" | "user"
+      comentario_origem: "ta" | "gestor"
       vaga_status:
         | "abertura"
         | "aprovacao_people"
@@ -242,6 +278,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["talent_acquisition", "user"],
+      comentario_origem: ["ta", "gestor"],
       vaga_status: [
         "abertura",
         "aprovacao_people",

@@ -428,37 +428,61 @@ function MinhasVagas() {
                 <th className="px-6 py-3 text-center font-bold">Case</th>
                 <th className="px-6 py-3 text-left font-bold">Status</th>
                 <th className="px-6 py-3"></th>
+                <th className="px-6 py-3"></th>
               </tr>
             </thead>
             <tbody>
-              {vagas.map((v) => (
-                <tr key={v.id} className="border-t border-border hover:bg-muted/30">
-                  <td className="px-6 py-3 font-mono text-xs text-brand-lilac">
-                    <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">{v.codigo}</Link>
-                  </td>
-                  <td className="px-6 py-3 font-medium">{v.nome}</td>
-                  <td className="px-6 py-3 text-muted-foreground">{v.gestor}</td>
-                  <td className="px-6 py-3 text-muted-foreground">{v.recruiter}</td>
-                  <td className="px-6 py-3 text-center">{v.candidatos_abordados}</td>
-                  <td className="px-6 py-3 text-center">{v.candidatos_papo_people}</td>
-                  <td className="px-6 py-3 text-center">{v.candidatos_papo_gestor}</td>
-                  <td className="px-6 py-3 text-center">{v.tem_case ? v.candidatos_case : "—"}</td>
-                  <td className="px-6 py-3">
-                    <select
-                      value={v.status}
-                      onChange={(e) => updateStatus(v.id, e.target.value as VagaStatus)}
-                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac"
-                    >
-                      {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </td>
-                  <td className="px-6 py-3 text-right">
-                    <button onClick={() => remove(v.id)} className="text-muted-foreground hover:text-destructive">
-                      <Trash2 className="size-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {vagas.map((v) => {
+                const open = openComentarios === v.id;
+                return (
+                  <>
+                    <tr key={v.id} className="border-t border-border hover:bg-muted/30">
+                      <td className="px-6 py-3 font-mono text-xs text-brand-lilac">
+                        <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">{v.codigo}</Link>
+                      </td>
+                      <td className="px-6 py-3 font-medium">{v.nome}</td>
+                      <td className="px-6 py-3 text-muted-foreground">{v.gestor}</td>
+                      <td className="px-6 py-3 text-muted-foreground">{v.recruiter}</td>
+                      <td className="px-6 py-3 text-center">{v.candidatos_abordados}</td>
+                      <td className="px-6 py-3 text-center">{v.candidatos_papo_people}</td>
+                      <td className="px-6 py-3 text-center">{v.candidatos_papo_gestor}</td>
+                      <td className="px-6 py-3 text-center">{v.tem_case ? v.candidatos_case : "—"}</td>
+                      <td className="px-6 py-3">
+                        <select
+                          value={v.status}
+                          onChange={(e) => updateStatus(v.id, e.target.value as VagaStatus)}
+                          className="rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac"
+                        >
+                          {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </td>
+                      <td className="px-6 py-3 text-right">
+                        <button
+                          onClick={() => setOpenComentarios(open ? null : v.id)}
+                          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold transition-colors ${open ? "border-brand-lilac/40 bg-brand-lilac/10 text-brand-lilac" : "border-border text-muted-foreground hover:text-foreground"}`}
+                          aria-expanded={open}
+                        >
+                          <MessageSquare className="size-3.5" />
+                          Comentários
+                          <ChevronDown className={`size-3 transition-transform ${open ? "rotate-180" : ""}`} />
+                        </button>
+                      </td>
+                      <td className="px-6 py-3 text-right">
+                        <button onClick={() => remove(v.id)} className="text-muted-foreground hover:text-destructive">
+                          <Trash2 className="size-4" />
+                        </button>
+                      </td>
+                    </tr>
+                    {open && (
+                      <tr key={`${v.id}-c`} className="border-t border-border bg-muted/20">
+                        <td colSpan={12} className="px-6 py-5">
+                          <VagaComentarios vagaId={v.id} mode="ta" />
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
             </tbody>
           </table>
         )}

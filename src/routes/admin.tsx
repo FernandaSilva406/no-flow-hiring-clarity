@@ -5,7 +5,7 @@ import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
 import { useHasRole } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { STATUS_OPTIONS, statusLabel, type VagaRow, type VagaStatus } from "@/lib/vagas-db";
+import { STATUS_OPTIONS, type VagaRow, type VagaStatus } from "@/lib/vagas-db";
 
 
 export const Route = createFileRoute("/admin")({

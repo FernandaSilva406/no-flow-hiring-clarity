@@ -1,11 +1,12 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2 } from "lucide-react";
+import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
 import { useHasRole } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { STATUS_OPTIONS, type VagaRow, type VagaStatus } from "@/lib/vagas-db";
+import { VagaComentarios } from "@/components/vaga-comentarios";
 
 
 export const Route = createFileRoute("/admin")({

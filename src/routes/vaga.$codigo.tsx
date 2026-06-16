@@ -2,6 +2,47 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, Check, Clock, MessageSquare, Users, Calendar, Target, Sparkles } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { findVaga, type Vaga, type Etapa } from "@/lib/mock-vagas";
+import { supabase } from "@/integrations/supabase/client";
+import { statusLabel, type VagaRow } from "@/lib/vagas-db";
+
+function rowToVaga(r: VagaRow): Vaga {
+  const order: Array<{ key: VagaRow["status"]; nome: string; descricao: string }> = [
+    { key: "abertura", nome: "Abertura da vaga", descricao: "Vaga criada e alinhada com o gestor." },
+    { key: "aprovacao_people", nome: "Aprovação People", descricao: "Validação pelo time de People." },
+    { key: "aprovacao_financeiro", nome: "Aprovação Financeiro", descricao: "Validação orçamentária." },
+    { key: "hunting", nome: "Hunting", descricao: "Prospecção ativa de candidatos." },
+    { key: "papo_people", nome: "Papo com People", descricao: "Entrevistas com People." },
+    { key: "case", nome: "Case técnico", descricao: "Resolução do desafio prático." },
+    { key: "papo_gestor", nome: "Papo com Gestor", descricao: "Entrevista com o gestor responsável." },
+    { key: "proposta", nome: "Proposta", descricao: "Envio e negociação da proposta." },
+    { key: "fechada", nome: "Fechada", descricao: "Vaga preenchida." },
+  ];
+  const filtered = r.tem_case ? order : order.filter((o) => o.key !== "case");
+  const currentIdx = filtered.findIndex((o) => o.key === r.status);
+  const etapas: Etapa[] = filtered.map((o, i) => ({
+    id: o.key,
+    nome: o.nome,
+    descricao: o.descricao,
+    status: i < currentIdx ? "concluido" : i === currentIdx ? "atual" : "pendente",
+    diasNaEtapa: i === currentIdx ? Math.max(1, Math.floor((Date.now() - new Date(r.updated_at).getTime()) / 86400000)) : undefined,
+    concluidoEm: i < currentIdx ? "—" : undefined,
+  }));
+  const diasAberta = Math.max(1, Math.floor((Date.now() - new Date(r.created_at).getTime()) / 86400000));
+  return {
+    codigo: r.codigo,
+    nome: r.nome,
+    area: r.area ?? "—",
+    gestor: r.gestor,
+    recruiter: r.recruiter,
+    status: statusLabel(r.status),
+    candidatosAbordados: r.candidatos_abordados || 1,
+    entrevistasRealizadas: r.candidatos_papo_people + r.candidatos_papo_gestor,
+    diasAberta,
+    slaPercent: 90,
+    etapas,
+    comentarios: [],
+  };
+}
 
 export const Route = createFileRoute("/vaga/$codigo")({
   head: ({ params }) => ({
@@ -10,7 +51,10 @@ export const Route = createFileRoute("/vaga/$codigo")({
       { name: "description", content: `Acompanhe o processo seletivo da vaga ${params.codigo}.` },
     ],
   }),
-  loader: ({ params }) => {
+  ssr: false,
+  loader: async ({ params }) => {
+    const { data } = await supabase.from("vagas").select("*").eq("codigo", params.codigo).maybeSingle();
+    if (data) return { vaga: rowToVaga(data as VagaRow) };
     const vaga = findVaga(params.codigo);
     if (!vaga) throw notFound();
     return { vaga };
@@ -32,6 +76,7 @@ export const Route = createFileRoute("/vaga/$codigo")({
     <div className="p-12 text-center text-destructive">{error.message}</div>
   ),
 });
+
 
 function VagaPage() {
   const { vaga } = Route.useLoaderData();

@@ -34,7 +34,7 @@ function rowToVaga(r: VagaRow): Vaga {
     area: r.area ?? "—",
     gestor: r.gestor,
     recruiter: r.recruiter,
-    status: statusLabel(r.status),
+    status: r.status === "fechada" ? "Fechada" : "Em andamento",
     candidatosAbordados: r.candidatos_abordados || 1,
     entrevistasRealizadas: r.candidatos_papo_people + r.candidatos_papo_gestor,
     diasAberta,

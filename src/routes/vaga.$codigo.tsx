@@ -3,9 +3,12 @@ import { ArrowLeft, Check, Clock, MessageSquare, Users, Calendar, Target, Sparkl
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { findVaga, type Vaga, type Etapa } from "@/lib/mock-vagas";
 import { supabase } from "@/integrations/supabase/client";
+import { VagaComentarios } from "@/components/vaga-comentarios";
 import { type VagaRow } from "@/lib/vagas-db";
 
-function rowToVaga(r: VagaRow): Vaga {
+type VagaWithId = Vaga & { id?: string };
+
+function rowToVaga(r: VagaRow): VagaWithId {
   const order: Array<{ key: VagaRow["status"]; nome: string; descricao: string }> = [
     { key: "abertura", nome: "Abertura da vaga", descricao: "Vaga criada e alinhada com o gestor." },
     { key: "aprovacao_people", nome: "Aprovação People", descricao: "Validação pelo time de People." },
@@ -29,6 +32,7 @@ function rowToVaga(r: VagaRow): Vaga {
   }));
   const diasAberta = Math.max(1, Math.floor((Date.now() - new Date(r.created_at).getTime()) / 86400000));
   return {
+    id: r.id,
     codigo: r.codigo,
     nome: r.nome,
     area: r.area ?? "—",

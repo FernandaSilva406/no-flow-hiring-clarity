@@ -284,6 +284,7 @@ function MinhasVagas() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [openComentarios, setOpenComentarios] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     codigo: "",

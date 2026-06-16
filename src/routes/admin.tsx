@@ -1,9 +1,12 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2 } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
 import { useHasRole } from "@/lib/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { STATUS_OPTIONS, type VagaRow, type VagaStatus } from "@/lib/vagas-db";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -170,7 +173,11 @@ function AdminPage() {
           </div>
         </section>
 
+        {/* Minhas vagas (DB) */}
+        <MinhasVagas />
+
         {/* Kanban */}
+
         <section className="mt-8">
           <h2 className="mb-4 font-bold">Kanban de vagas ativas</h2>
           <div className="grid gap-4 md:grid-cols-4">
@@ -269,3 +276,205 @@ function KpiCard({
     </div>
   );
 }
+
+function MinhasVagas() {
+  const [vagas, setVagas] = useState<VagaRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    codigo: "",
+    nome: "",
+    gestor: "",
+    recruiter: "",
+    area: "",
+    tem_case: false,
+    candidatos_abordados: 0,
+    candidatos_papo_people: 0,
+    candidatos_papo_gestor: 0,
+    candidatos_case: 0,
+    status: "abertura" as VagaStatus,
+  });
+
+  async function load() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("vagas")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) setVagas(data as VagaRow[]);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function onCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setSaving(true);
+    const { error } = await supabase.from("vagas").insert({
+      ...form,
+      area: form.area || null,
+    });
+    setSaving(false);
+    if (error) {
+      setErr(error.message);
+      return;
+    }
+    setShowForm(false);
+    setForm({
+      codigo: "", nome: "", gestor: "", recruiter: "", area: "",
+      tem_case: false, candidatos_abordados: 0, candidatos_papo_people: 0,
+      candidatos_papo_gestor: 0, candidatos_case: 0, status: "abertura",
+    });
+    load();
+  }
+
+  async function updateStatus(id: string, status: VagaStatus) {
+    setVagas((vs) => vs.map((v) => (v.id === id ? { ...v, status } : v)));
+    await supabase.from("vagas").update({ status }).eq("id", id);
+  }
+
+  async function remove(id: string) {
+    if (!confirm("Excluir esta vaga?")) return;
+    await supabase.from("vagas").delete().eq("id", id);
+    load();
+  }
+
+  return (
+    <section className="mt-8 rounded-3xl border border-border bg-card shadow-soft">
+      <div className="flex items-center justify-between border-b border-border p-6">
+        <div>
+          <h2 className="font-bold">Minhas vagas</h2>
+          <p className="text-xs text-muted-foreground">Vagas cadastradas por você. Altere o status para refletir na tela do gestor.</p>
+        </div>
+        <button
+          onClick={() => setShowForm((s) => !s)}
+          className="flex items-center gap-2 rounded-xl bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-brand-glow"
+        >
+          <Plus className="size-4" /> {showForm ? "Cancelar" : "Nova vaga"}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={onCreate} className="grid gap-4 border-b border-border p-6 md:grid-cols-2 animate-fade-up">
+          <Field label="Código" required>
+            <input required value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })} className={inputCls} placeholder="VAGA-001" />
+          </Field>
+          <Field label="Nome da vaga" required>
+            <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className={inputCls} placeholder="Desenvolvedor(a) Full Stack Sr." />
+          </Field>
+          <Field label="Gestor responsável" required>
+            <input required value={form.gestor} onChange={(e) => setForm({ ...form, gestor: e.target.value })} className={inputCls} />
+          </Field>
+          <Field label="Recrutador responsável" required>
+            <input required value={form.recruiter} onChange={(e) => setForm({ ...form, recruiter: e.target.value })} className={inputCls} />
+          </Field>
+          <Field label="Área">
+            <input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} className={inputCls} placeholder="Tecnologia" />
+          </Field>
+          <Field label="Status inicial">
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as VagaStatus })} className={inputCls}>
+              {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+          <Field label="Candidatos abordados">
+            <input type="number" min={0} value={form.candidatos_abordados} onChange={(e) => setForm({ ...form, candidatos_abordados: Number(e.target.value) })} className={inputCls} />
+          </Field>
+          <Field label="Seguiram p/ papo People">
+            <input type="number" min={0} value={form.candidatos_papo_people} onChange={(e) => setForm({ ...form, candidatos_papo_people: Number(e.target.value) })} className={inputCls} />
+          </Field>
+          <Field label="Seguiram p/ papo Gestor">
+            <input type="number" min={0} value={form.candidatos_papo_gestor} onChange={(e) => setForm({ ...form, candidatos_papo_gestor: Number(e.target.value) })} className={inputCls} />
+          </Field>
+          <Field label="Em case">
+            <input type="number" min={0} value={form.candidatos_case} onChange={(e) => setForm({ ...form, candidatos_case: Number(e.target.value) })} className={inputCls} />
+          </Field>
+          <label className="flex items-center gap-2 text-sm md:col-span-2">
+            <input type="checkbox" checked={form.tem_case} onChange={(e) => setForm({ ...form, tem_case: e.target.checked })} />
+            Esta vaga possui etapa de case
+          </label>
+          {err && <p className="md:col-span-2 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
+          <div className="md:col-span-2 flex justify-end">
+            <button type="submit" disabled={saving} className="flex items-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-brand-glow disabled:opacity-60">
+              {saving && <Loader2 className="size-4 animate-spin" />} Salvar vaga
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="overflow-x-auto">
+        {loading ? (
+          <div className="p-12 text-center text-sm text-muted-foreground"><Loader2 className="mx-auto size-5 animate-spin" /></div>
+        ) : vagas.length === 0 ? (
+          <p className="p-12 text-center text-sm text-muted-foreground">Nenhuma vaga cadastrada. Clique em "Nova vaga" para começar.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-6 py-3 text-left font-bold">Código</th>
+                <th className="px-6 py-3 text-left font-bold">Vaga</th>
+                <th className="px-6 py-3 text-left font-bold">Gestor</th>
+                <th className="px-6 py-3 text-left font-bold">Recruiter</th>
+                <th className="px-6 py-3 text-center font-bold">Abord.</th>
+                <th className="px-6 py-3 text-center font-bold">People</th>
+                <th className="px-6 py-3 text-center font-bold">Gestor</th>
+                <th className="px-6 py-3 text-center font-bold">Case</th>
+                <th className="px-6 py-3 text-left font-bold">Status</th>
+                <th className="px-6 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {vagas.map((v) => (
+                <tr key={v.id} className="border-t border-border hover:bg-muted/30">
+                  <td className="px-6 py-3 font-mono text-xs text-brand-lilac">
+                    <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">{v.codigo}</Link>
+                  </td>
+                  <td className="px-6 py-3 font-medium">{v.nome}</td>
+                  <td className="px-6 py-3 text-muted-foreground">{v.gestor}</td>
+                  <td className="px-6 py-3 text-muted-foreground">{v.recruiter}</td>
+                  <td className="px-6 py-3 text-center">{v.candidatos_abordados}</td>
+                  <td className="px-6 py-3 text-center">{v.candidatos_papo_people}</td>
+                  <td className="px-6 py-3 text-center">{v.candidatos_papo_gestor}</td>
+                  <td className="px-6 py-3 text-center">{v.tem_case ? v.candidatos_case : "—"}</td>
+                  <td className="px-6 py-3">
+                    <select
+                      value={v.status}
+                      onChange={(e) => updateStatus(v.id, e.target.value as VagaStatus)}
+                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac"
+                    >
+                      {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </td>
+                  <td className="px-6 py-3 text-right">
+                    <button onClick={() => remove(v.id)} className="text-muted-foreground hover:text-destructive">
+                      <Trash2 className="size-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </section>
+  );
+}
+
+const inputCls = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand-lilac";
+
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        {label}{required && <span className="text-brand-pink"> *</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+

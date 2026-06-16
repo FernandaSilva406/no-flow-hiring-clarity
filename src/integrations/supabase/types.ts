@@ -35,6 +35,60 @@ export type Database = {
         }
         Relationships: []
       }
+      vagas: {
+        Row: {
+          area: string | null
+          candidatos_abordados: number
+          candidatos_case: number
+          candidatos_papo_gestor: number
+          candidatos_papo_people: number
+          codigo: string
+          created_at: string
+          created_by: string | null
+          gestor: string
+          id: string
+          nome: string
+          recruiter: string
+          status: Database["public"]["Enums"]["vaga_status"]
+          tem_case: boolean
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          candidatos_abordados?: number
+          candidatos_case?: number
+          candidatos_papo_gestor?: number
+          candidatos_papo_people?: number
+          codigo: string
+          created_at?: string
+          created_by?: string | null
+          gestor: string
+          id?: string
+          nome: string
+          recruiter: string
+          status?: Database["public"]["Enums"]["vaga_status"]
+          tem_case?: boolean
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          candidatos_abordados?: number
+          candidatos_case?: number
+          candidatos_papo_gestor?: number
+          candidatos_papo_people?: number
+          codigo?: string
+          created_at?: string
+          created_by?: string | null
+          gestor?: string
+          id?: string
+          nome?: string
+          recruiter?: string
+          status?: Database["public"]["Enums"]["vaga_status"]
+          tem_case?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -50,6 +104,16 @@ export type Database = {
     }
     Enums: {
       app_role: "talent_acquisition" | "user"
+      vaga_status:
+        | "abertura"
+        | "aprovacao_people"
+        | "aprovacao_financeiro"
+        | "hunting"
+        | "papo_people"
+        | "case"
+        | "papo_gestor"
+        | "proposta"
+        | "fechada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -178,6 +242,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["talent_acquisition", "user"],
+      vaga_status: [
+        "abertura",
+        "aprovacao_people",
+        "aprovacao_financeiro",
+        "hunting",
+        "papo_people",
+        "case",
+        "papo_gestor",
+        "proposta",
+        "fechada",
+      ],
     },
   },
 } as const

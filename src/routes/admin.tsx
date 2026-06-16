@@ -480,7 +480,7 @@ function MinhasVagas() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </FragmentRow>
                 );
               })}
             </tbody>

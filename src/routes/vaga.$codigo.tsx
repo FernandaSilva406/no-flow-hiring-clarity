@@ -3,7 +3,7 @@ import { ArrowLeft, Check, Clock, MessageSquare, Users, Calendar, Target, Sparkl
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { findVaga, type Vaga, type Etapa } from "@/lib/mock-vagas";
 import { supabase } from "@/integrations/supabase/client";
-import { statusLabel, type VagaRow } from "@/lib/vagas-db";
+import { type VagaRow } from "@/lib/vagas-db";
 
 function rowToVaga(r: VagaRow): Vaga {
   const order: Array<{ key: VagaRow["status"]; nome: string; descricao: string }> = [

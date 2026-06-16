@@ -173,7 +173,11 @@ function AdminPage() {
           </div>
         </section>
 
+        {/* Minhas vagas (DB) */}
+        <MinhasVagas />
+
         {/* Kanban */}
+
         <section className="mt-8">
           <h2 className="mb-4 font-bold">Kanban de vagas ativas</h2>
           <div className="grid gap-4 md:grid-cols-4">

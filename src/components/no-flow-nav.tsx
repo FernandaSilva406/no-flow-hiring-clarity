@@ -2,6 +2,8 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { NotificationsBell } from "@/components/notifications-bell";
+
 
 export function NoFlowNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

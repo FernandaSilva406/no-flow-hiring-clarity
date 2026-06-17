@@ -476,7 +476,7 @@ function MinhasVagas() {
                     {open && (
                       <tr key={`${v.id}-c`} className="border-t border-border bg-muted/20">
                         <td colSpan={12} className="px-6 py-5">
-                          <VagaComentarios vagaId={v.id} mode="ta" />
+                          <VagaComentarios vagaCodigo={v.codigo} mode="ta" />
                         </td>
                       </tr>
                     )}

@@ -5,7 +5,8 @@ import { useAuth, useHasRole } from "@/lib/use-auth";
 
 export type ComentarioRow = {
   id: string;
-  vaga_id: string;
+  vaga_id: string | null;
+  vaga_codigo: string | null;
   autor: string;
   texto: string;
   origem: "ta" | "gestor";
@@ -13,12 +14,13 @@ export type ComentarioRow = {
 };
 
 export function VagaComentarios({
-  vagaId,
+  vagaCodigo,
   mode,
 }: {
-  vagaId: string;
+  vagaCodigo: string;
   mode: "ta" | "gestor";
 }) {
+
   const { user } = useAuth();
   const { hasRole } = useHasRole("talent_acquisition");
   const [items, setItems] = useState<ComentarioRow[]>([]);
@@ -33,7 +35,7 @@ export function VagaComentarios({
     const { data } = await supabase
       .from("vaga_comentarios")
       .select("*")
-      .eq("vaga_id", vagaId)
+      .eq("vaga_codigo", vagaCodigo)
       .order("created_at", { ascending: false });
     if (data) setItems(data as ComentarioRow[]);
     setLoading(false);
@@ -42,7 +44,8 @@ export function VagaComentarios({
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vagaId]);
+  }, [vagaCodigo]);
+
 
   useEffect(() => {
     if (mode === "ta" && user?.email && !autor) {
@@ -66,11 +69,12 @@ export function VagaComentarios({
     }
     setSending(true);
     const { error } = await supabase.from("vaga_comentarios").insert({
-      vaga_id: vagaId,
+      vaga_codigo: vagaCodigo,
       autor: autorTrim,
       texto: textoTrim,
       origem: mode,
     });
+
     setSending(false);
     if (error) {
       setErr(error.message);

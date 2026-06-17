@@ -250,11 +250,8 @@ function SidePanel({ vaga }: { vaga: Vaga }) {
         <p className="mb-4 text-xs text-muted-foreground">
           Deixe um comentário para o time de TA. <strong>Identifique-se com seu nome</strong> — comentários anônimos não serão enviados.
         </p>
-        {(vaga as VagaWithId).id ? (
-          <VagaComentarios vagaId={(vaga as VagaWithId).id!} mode="gestor" />
-        ) : (
-          <p className="text-sm text-muted-foreground">Comentários indisponíveis para esta vaga.</p>
-        )}
+        <VagaComentarios vagaCodigo={vaga.codigo} mode="gestor" />
+
       </div>
     </aside>
   );

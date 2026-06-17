@@ -39,7 +39,9 @@ export function NoFlowNav() {
         <div className="flex items-center gap-6">
           {item("/", "Busca")}
           {user && item("/admin", "Dashboard TA")}
+          {user && <NotificationsBell />}
           {user ? (
+
             <button
               onClick={handleLogout}
               title="Sair"

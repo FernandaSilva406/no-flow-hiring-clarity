@@ -35,7 +35,7 @@ export function VagaComentarios({
     const { data } = await supabase
       .from("vaga_comentarios")
       .select("*")
-      .eq("vaga_id", vagaId)
+      .eq("vaga_codigo", vagaCodigo)
       .order("created_at", { ascending: false });
     if (data) setItems(data as ComentarioRow[]);
     setLoading(false);
@@ -44,7 +44,8 @@ export function VagaComentarios({
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vagaId]);
+  }, [vagaCodigo]);
+
 
   useEffect(() => {
     if (mode === "ta" && user?.email && !autor) {

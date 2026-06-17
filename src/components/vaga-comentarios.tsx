@@ -93,7 +93,7 @@ export function VagaComentarios({
   return (
     <div className="space-y-4">
       <form onSubmit={send} className="space-y-2">
-        <div className="grid gap-2 sm:grid-cols-[200px_1fr]">
+        <div className="grid gap-2">
           <input
             value={autor}
             onChange={(e) => setAutor(e.target.value)}

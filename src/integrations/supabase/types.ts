@@ -42,7 +42,8 @@ export type Database = {
           id: string
           origem: Database["public"]["Enums"]["comentario_origem"]
           texto: string
-          vaga_id: string
+          vaga_codigo: string | null
+          vaga_id: string | null
         }
         Insert: {
           autor: string
@@ -50,7 +51,8 @@ export type Database = {
           id?: string
           origem: Database["public"]["Enums"]["comentario_origem"]
           texto: string
-          vaga_id: string
+          vaga_codigo?: string | null
+          vaga_id?: string | null
         }
         Update: {
           autor?: string
@@ -58,17 +60,10 @@ export type Database = {
           id?: string
           origem?: Database["public"]["Enums"]["comentario_origem"]
           texto?: string
-          vaga_id?: string
+          vaga_codigo?: string | null
+          vaga_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "vaga_comentarios_vaga_id_fkey"
-            columns: ["vaga_id"]
-            isOneToOne: false
-            referencedRelation: "vagas"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       vagas: {
         Row: {

@@ -5,7 +5,8 @@ import { useAuth, useHasRole } from "@/lib/use-auth";
 
 export type ComentarioRow = {
   id: string;
-  vaga_id: string;
+  vaga_id: string | null;
+  vaga_codigo: string | null;
   autor: string;
   texto: string;
   origem: "ta" | "gestor";
@@ -13,12 +14,13 @@ export type ComentarioRow = {
 };
 
 export function VagaComentarios({
-  vagaId,
+  vagaCodigo,
   mode,
 }: {
-  vagaId: string;
+  vagaCodigo: string;
   mode: "ta" | "gestor";
 }) {
+
   const { user } = useAuth();
   const { hasRole } = useHasRole("talent_acquisition");
   const [items, setItems] = useState<ComentarioRow[]>([]);

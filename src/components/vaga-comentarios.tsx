@@ -69,11 +69,12 @@ export function VagaComentarios({
     }
     setSending(true);
     const { error } = await supabase.from("vaga_comentarios").insert({
-      vaga_id: vagaId,
+      vaga_codigo: vagaCodigo,
       autor: autorTrim,
       texto: textoTrim,
       origem: mode,
     });
+
     setSending(false);
     if (error) {
       setErr(error.message);

@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      notificacoes_leitura: {
+        Row: {
+          last_read_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          last_read_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          last_read_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

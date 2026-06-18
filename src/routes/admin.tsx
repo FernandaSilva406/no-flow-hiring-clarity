@@ -282,11 +282,12 @@ function MinhasVagas() {
   const [vagas, setVagas] = useState<VagaRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [openComentarios, setOpenComentarios] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
+  const emptyForm = {
     codigo: "",
     nome: "",
     gestor: "",
@@ -298,7 +299,8 @@ function MinhasVagas() {
     candidatos_papo_gestor: 0,
     candidatos_case: 0,
     status: "abertura" as VagaStatus,
-  });
+  };
+  const [form, setForm] = useState(emptyForm);
 
   async function load() {
     setLoading(true);
@@ -314,31 +316,60 @@ function MinhasVagas() {
     load();
   }, []);
 
-  async function onCreate(e: React.FormEvent) {
+  function resetForm() {
+    setForm(emptyForm);
+    setEditingId(null);
+    setErr(null);
+  }
+
+  function startEdit(v: VagaRow) {
+    setEditingId(v.id);
+    setForm({
+      codigo: v.codigo,
+      nome: v.nome,
+      gestor: v.gestor,
+      recruiter: v.recruiter,
+      area: v.area ?? "",
+      tem_case: v.tem_case,
+      candidatos_abordados: v.candidatos_abordados,
+      candidatos_papo_people: v.candidatos_papo_people,
+      candidatos_papo_gestor: v.candidatos_papo_gestor,
+      candidatos_case: v.candidatos_case,
+      status: v.status,
+    });
+    setShowForm(true);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
     setSaving(true);
-    const { error } = await supabase.from("vagas").insert({
-      ...form,
-      area: form.area || null,
-    });
+    const payload = { ...form, area: form.area || null };
+    const { error } = editingId
+      ? await supabase.from("vagas").update(payload).eq("id", editingId)
+      : await supabase.from("vagas").insert(payload);
     setSaving(false);
     if (error) {
       setErr(error.message);
       return;
     }
     setShowForm(false);
-    setForm({
-      codigo: "", nome: "", gestor: "", recruiter: "", area: "",
-      tem_case: false, candidatos_abordados: 0, candidatos_papo_people: 0,
-      candidatos_papo_gestor: 0, candidatos_case: 0, status: "abertura",
-    });
+    resetForm();
     load();
   }
 
   async function updateStatus(id: string, status: VagaStatus) {
     setVagas((vs) => vs.map((v) => (v.id === id ? { ...v, status } : v)));
     await supabase.from("vagas").update({ status }).eq("id", id);
+  }
+
+  async function fecharVaga(v: VagaRow) {
+    if (v.status === "fechada") return;
+    if (!confirm(`Fechar a vaga "${v.nome}"?`)) return;
+    await updateStatus(v.id, "fechada");
   }
 
   async function remove(id: string) {

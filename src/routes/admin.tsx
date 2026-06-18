@@ -386,7 +386,15 @@ function MinhasVagas() {
           <p className="text-xs text-muted-foreground">Vagas cadastradas por você. Altere o status para refletir na tela do gestor.</p>
         </div>
         <button
-          onClick={() => setShowForm((s) => !s)}
+          onClick={() => {
+            if (showForm) {
+              setShowForm(false);
+              resetForm();
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+          }}
           className="flex items-center gap-2 rounded-xl bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-brand-glow"
         >
           <Plus className="size-4" /> {showForm ? "Cancelar" : "Nova vaga"}
@@ -394,7 +402,7 @@ function MinhasVagas() {
       </div>
 
       {showForm && (
-        <form onSubmit={onCreate} className="grid gap-4 border-b border-border p-6 md:grid-cols-2 animate-fade-up">
+        <form onSubmit={onSubmit} className="grid gap-4 border-b border-border p-6 md:grid-cols-2 animate-fade-up">
           <Field label="Código" required>
             <input required value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })} className={inputCls} placeholder="VAGA-001" />
           </Field>

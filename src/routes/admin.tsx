@@ -397,7 +397,7 @@ function MinhasVagas() {
           }}
           className="flex items-center gap-2 rounded-xl bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-brand-glow"
         >
-          <Plus className="size-4" /> {showForm ? "Cancelar" : "Nova vaga"}
+          <Plus className="size-4" /> {showForm ? "Cancelar" : editingId ? "Editar vaga" : "Nova vaga"}
         </button>
       </div>
 

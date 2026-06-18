@@ -93,6 +93,7 @@ export type Database = {
           codigo: string
           created_at: string
           created_by: string | null
+          freeze_motivo: string | null
           gestor: string
           id: string
           nome: string
@@ -110,6 +111,7 @@ export type Database = {
           codigo: string
           created_at?: string
           created_by?: string | null
+          freeze_motivo?: string | null
           gestor: string
           id?: string
           nome: string
@@ -127,6 +129,7 @@ export type Database = {
           codigo?: string
           created_at?: string
           created_by?: string | null
+          freeze_motivo?: string | null
           gestor?: string
           id?: string
           nome?: string
@@ -163,6 +166,7 @@ export type Database = {
         | "papo_gestor"
         | "proposta"
         | "fechada"
+        | "congelada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -302,6 +306,7 @@ export const Constants = {
         "papo_gestor",
         "proposta",
         "fechada",
+        "congelada",
       ],
     },
   },

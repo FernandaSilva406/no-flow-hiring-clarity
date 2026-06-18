@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown } from "lucide-react";
+import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown, Pencil, CheckCircle2 } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
 import { useHasRole } from "@/lib/use-auth";
@@ -282,11 +282,12 @@ function MinhasVagas() {
   const [vagas, setVagas] = useState<VagaRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [openComentarios, setOpenComentarios] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
+  const emptyForm = {
     codigo: "",
     nome: "",
     gestor: "",
@@ -298,7 +299,8 @@ function MinhasVagas() {
     candidatos_papo_gestor: 0,
     candidatos_case: 0,
     status: "abertura" as VagaStatus,
-  });
+  };
+  const [form, setForm] = useState(emptyForm);
 
   async function load() {
     setLoading(true);
@@ -314,31 +316,60 @@ function MinhasVagas() {
     load();
   }, []);
 
-  async function onCreate(e: React.FormEvent) {
+  function resetForm() {
+    setForm(emptyForm);
+    setEditingId(null);
+    setErr(null);
+  }
+
+  function startEdit(v: VagaRow) {
+    setEditingId(v.id);
+    setForm({
+      codigo: v.codigo,
+      nome: v.nome,
+      gestor: v.gestor,
+      recruiter: v.recruiter,
+      area: v.area ?? "",
+      tem_case: v.tem_case,
+      candidatos_abordados: v.candidatos_abordados,
+      candidatos_papo_people: v.candidatos_papo_people,
+      candidatos_papo_gestor: v.candidatos_papo_gestor,
+      candidatos_case: v.candidatos_case,
+      status: v.status,
+    });
+    setShowForm(true);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
     setSaving(true);
-    const { error } = await supabase.from("vagas").insert({
-      ...form,
-      area: form.area || null,
-    });
+    const payload = { ...form, area: form.area || null };
+    const { error } = editingId
+      ? await supabase.from("vagas").update(payload).eq("id", editingId)
+      : await supabase.from("vagas").insert(payload);
     setSaving(false);
     if (error) {
       setErr(error.message);
       return;
     }
     setShowForm(false);
-    setForm({
-      codigo: "", nome: "", gestor: "", recruiter: "", area: "",
-      tem_case: false, candidatos_abordados: 0, candidatos_papo_people: 0,
-      candidatos_papo_gestor: 0, candidatos_case: 0, status: "abertura",
-    });
+    resetForm();
     load();
   }
 
   async function updateStatus(id: string, status: VagaStatus) {
     setVagas((vs) => vs.map((v) => (v.id === id ? { ...v, status } : v)));
     await supabase.from("vagas").update({ status }).eq("id", id);
+  }
+
+  async function fecharVaga(v: VagaRow) {
+    if (v.status === "fechada") return;
+    if (!confirm(`Fechar a vaga "${v.nome}"?`)) return;
+    await updateStatus(v.id, "fechada");
   }
 
   async function remove(id: string) {
@@ -355,15 +386,23 @@ function MinhasVagas() {
           <p className="text-xs text-muted-foreground">Vagas cadastradas por você. Altere o status para refletir na tela do gestor.</p>
         </div>
         <button
-          onClick={() => setShowForm((s) => !s)}
+          onClick={() => {
+            if (showForm) {
+              setShowForm(false);
+              resetForm();
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+          }}
           className="flex items-center gap-2 rounded-xl bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-brand-glow"
         >
-          <Plus className="size-4" /> {showForm ? "Cancelar" : "Nova vaga"}
+          <Plus className="size-4" /> {showForm ? "Cancelar" : editingId ? "Editar vaga" : "Nova vaga"}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={onCreate} className="grid gap-4 border-b border-border p-6 md:grid-cols-2 animate-fade-up">
+        <form onSubmit={onSubmit} className="grid gap-4 border-b border-border p-6 md:grid-cols-2 animate-fade-up">
           <Field label="Código" required>
             <input required value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })} className={inputCls} placeholder="VAGA-001" />
           </Field>
@@ -403,7 +442,7 @@ function MinhasVagas() {
           {err && <p className="md:col-span-2 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
           <div className="md:col-span-2 flex justify-end">
             <button type="submit" disabled={saving} className="flex items-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-brand-glow disabled:opacity-60">
-              {saving && <Loader2 className="size-4 animate-spin" />} Salvar vaga
+              {saving && <Loader2 className="size-4 animate-spin" />} {editingId ? "Salvar alterações" : "Salvar vaga"}
             </button>
           </div>
         </form>
@@ -468,9 +507,26 @@ function MinhasVagas() {
                         </button>
                       </td>
                       <td className="px-6 py-3 text-right">
-                        <button onClick={() => remove(v.id)} className="text-muted-foreground hover:text-destructive">
-                          <Trash2 className="size-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => startEdit(v)}
+                            title="Editar vaga"
+                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <Pencil className="size-4" />
+                          </button>
+                          <button
+                            onClick={() => fecharVaga(v)}
+                            disabled={v.status === "fechada"}
+                            title={v.status === "fechada" ? "Vaga já fechada" : "Fechar vaga"}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-success/10 hover:text-success disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+                          >
+                            <CheckCircle2 className="size-4" />
+                          </button>
+                          <button onClick={() => remove(v.id)} title="Excluir vaga" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {open && (

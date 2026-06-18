@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown, Pencil, CheckCircle2 } from "lucide-react";
+import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown, Pencil, CheckCircle2, Snowflake } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
 import { useHasRole } from "@/lib/use-auth";
@@ -362,14 +362,33 @@ function MinhasVagas() {
   }
 
   async function updateStatus(id: string, status: VagaStatus) {
-    setVagas((vs) => vs.map((v) => (v.id === id ? { ...v, status } : v)));
-    await supabase.from("vagas").update({ status }).eq("id", id);
+    setVagas((vs) => vs.map((v) => (v.id === id ? { ...v, status, freeze_motivo: status === "congelada" ? v.freeze_motivo : null } : v)));
+    const patch: { status: VagaStatus; freeze_motivo?: null } = { status };
+    if (status !== "congelada") patch.freeze_motivo = null;
+    await supabase.from("vagas").update(patch).eq("id", id);
   }
 
   async function fecharVaga(v: VagaRow) {
     if (v.status === "fechada") return;
     if (!confirm(`Fechar a vaga "${v.nome}"?`)) return;
     await updateStatus(v.id, "fechada");
+  }
+
+  async function congelarVaga(v: VagaRow) {
+    const motivo = window.prompt(
+      v.status === "congelada"
+        ? `Atualizar motivo do congelamento de "${v.nome}":`
+        : `Por que a vaga "${v.nome}" será congelada?`,
+      v.freeze_motivo ?? "",
+    );
+    if (motivo === null) return;
+    const motivoTrim = motivo.trim();
+    if (!motivoTrim) {
+      alert("É obrigatório informar um motivo para congelar a vaga.");
+      return;
+    }
+    setVagas((vs) => vs.map((x) => (x.id === v.id ? { ...x, status: "congelada", freeze_motivo: motivoTrim } : x)));
+    await supabase.from("vagas").update({ status: "congelada", freeze_motivo: motivoTrim }).eq("id", v.id);
   }
 
   async function remove(id: string) {
@@ -523,12 +542,32 @@ function MinhasVagas() {
                           >
                             <CheckCircle2 className="size-4" />
                           </button>
+                          <button
+                            onClick={() => congelarVaga(v)}
+                            title={v.status === "congelada" ? "Atualizar motivo do congelamento" : "Congelar vaga"}
+                            className={`rounded-lg p-1.5 hover:bg-brand-lilac/10 hover:text-brand-lilac ${v.status === "congelada" ? "text-brand-lilac" : "text-muted-foreground"}`}
+                          >
+                            <Snowflake className="size-4" />
+                          </button>
                           <button onClick={() => remove(v.id)} title="Excluir vaga" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
                             <Trash2 className="size-4" />
                           </button>
                         </div>
                       </td>
                     </tr>
+                    {v.status === "congelada" && v.freeze_motivo && (
+                      <tr key={`${v.id}-f`} className="border-t border-border bg-brand-lilac/5">
+                        <td colSpan={12} className="px-6 py-3">
+                          <div className="flex items-start gap-2 text-xs">
+                            <Snowflake className="mt-0.5 size-3.5 shrink-0 text-brand-lilac" />
+                            <div>
+                              <span className="font-bold uppercase tracking-wider text-brand-lilac">Vaga congelada — </span>
+                              <span className="text-foreground/90">{v.freeze_motivo}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     {open && (
                       <tr key={`${v.id}-c`} className="border-t border-border bg-muted/20">
                         <td colSpan={12} className="px-6 py-5">

@@ -8,6 +8,7 @@ export const STATUS_OPTIONS = [
   { value: "papo_gestor", label: "Papo com Gestor" },
   { value: "proposta", label: "Proposta" },
   { value: "fechada", label: "Fechada" },
+  { value: "congelada", label: "Congelada" },
 ] as const;
 
 export type VagaStatus = (typeof STATUS_OPTIONS)[number]["value"];
@@ -28,6 +29,7 @@ export type VagaRow = {
   candidatos_papo_gestor: number;
   candidatos_case: number;
   status: VagaStatus;
+  freeze_motivo: string | null;
   created_at: string;
   updated_at: string;
 };

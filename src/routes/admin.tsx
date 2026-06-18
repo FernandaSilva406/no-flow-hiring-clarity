@@ -467,119 +467,89 @@ function MinhasVagas() {
         </form>
       )}
 
-      <div className="overflow-x-auto">
+      <div className="p-6">
         {loading ? (
-          <div className="p-12 text-center text-sm text-muted-foreground"><Loader2 className="mx-auto size-5 animate-spin" /></div>
+          <div className="py-12 text-center text-sm text-muted-foreground"><Loader2 className="mx-auto size-5 animate-spin" /></div>
         ) : vagas.length === 0 ? (
-          <p className="p-12 text-center text-sm text-muted-foreground">Nenhuma vaga cadastrada. Clique em "Nova vaga" para começar.</p>
+          <p className="py-12 text-center text-sm text-muted-foreground">Nenhuma vaga cadastrada. Clique em "Nova vaga" para começar.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-6 py-3 text-left font-bold">Código</th>
-                <th className="px-6 py-3 text-left font-bold">Vaga</th>
-                <th className="px-6 py-3 text-left font-bold">Gestor</th>
-                <th className="px-6 py-3 text-left font-bold">Recruiter</th>
-                <th className="px-6 py-3 text-center font-bold">Abord.</th>
-                <th className="px-6 py-3 text-center font-bold">People</th>
-                <th className="px-6 py-3 text-center font-bold">Gestor</th>
-                <th className="px-6 py-3 text-center font-bold">Case</th>
-                <th className="px-6 py-3 text-left font-bold">Status</th>
-                <th className="px-6 py-3"></th>
-                <th className="px-6 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {vagas.map((v) => {
-                const open = openComentarios === v.id;
-                return (
-                  <Fragment key={v.id}>
-                    <tr className="border-t border-border hover:bg-muted/30">
-                      <td className="px-6 py-3 font-mono text-xs text-brand-lilac">
-                        <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">{v.codigo}</Link>
-                      </td>
-                      <td className="px-6 py-3 font-medium">{v.nome}</td>
-                      <td className="px-6 py-3 text-muted-foreground">{v.gestor}</td>
-                      <td className="px-6 py-3 text-muted-foreground">{v.recruiter}</td>
-                      <td className="px-6 py-3 text-center">{v.candidatos_abordados}</td>
-                      <td className="px-6 py-3 text-center">{v.candidatos_papo_people}</td>
-                      <td className="px-6 py-3 text-center">{v.candidatos_papo_gestor}</td>
-                      <td className="px-6 py-3 text-center">{v.tem_case ? v.candidatos_case : "—"}</td>
-                      <td className="px-6 py-3">
-                        <select
-                          value={v.status}
-                          onChange={(e) => updateStatus(v.id, e.target.value as VagaStatus)}
-                          className="rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac"
-                        >
-                          {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                        </select>
-                      </td>
-                      <td className="px-6 py-3 text-right">
-                        <button
-                          onClick={() => setOpenComentarios(open ? null : v.id)}
-                          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold transition-colors ${open ? "border-brand-lilac/40 bg-brand-lilac/10 text-brand-lilac" : "border-border text-muted-foreground hover:text-foreground"}`}
-                          aria-expanded={open}
-                        >
-                          <MessageSquare className="size-3.5" />
-                          Comentários
-                          <ChevronDown className={`size-3 transition-transform ${open ? "rotate-180" : ""}`} />
-                        </button>
-                      </td>
-                      <td className="px-6 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => startEdit(v)}
-                            title="Editar vaga"
-                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <Pencil className="size-4" />
-                          </button>
-                          <button
-                            onClick={() => fecharVaga(v)}
-                            disabled={v.status === "fechada"}
-                            title={v.status === "fechada" ? "Vaga já fechada" : "Fechar vaga"}
-                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-success/10 hover:text-success disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-                          >
-                            <CheckCircle2 className="size-4" />
-                          </button>
-                          <button
-                            onClick={() => congelarVaga(v)}
-                            title={v.status === "congelada" ? "Atualizar motivo do congelamento" : "Congelar vaga"}
-                            className={`rounded-lg p-1.5 hover:bg-brand-lilac/10 hover:text-brand-lilac ${v.status === "congelada" ? "text-brand-lilac" : "text-muted-foreground"}`}
-                          >
-                            <Snowflake className="size-4" />
-                          </button>
-                          <button onClick={() => remove(v.id)} title="Excluir vaga" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    {v.status === "congelada" && v.freeze_motivo && (
-                      <tr key={`${v.id}-f`} className="border-t border-border bg-brand-lilac/5">
-                        <td colSpan={12} className="px-6 py-3">
-                          <div className="flex items-start gap-2 text-xs">
-                            <Snowflake className="mt-0.5 size-3.5 shrink-0 text-brand-lilac" />
-                            <div>
-                              <span className="font-bold uppercase tracking-wider text-brand-lilac">Vaga congelada — </span>
-                              <span className="text-foreground/90">{v.freeze_motivo}</span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    {open && (
-                      <tr key={`${v.id}-c`} className="border-t border-border bg-muted/20">
-                        <td colSpan={12} className="px-6 py-5">
-                          <VagaComentarios vagaCodigo={v.codigo} mode="ta" />
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="space-y-4">
+            {vagas.map((v) => {
+              const open = openComentarios === v.id;
+              return (
+                <div key={v.id} className="rounded-2xl border border-border bg-background/60 p-5 shadow-soft transition-all hover:border-brand-lilac/30">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="font-mono text-xs text-brand-lilac hover:underline">{v.codigo}</Link>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${v.status === "fechada" ? "bg-success/10 text-success" : v.status === "congelada" ? "bg-brand-lilac/10 text-brand-lilac" : "bg-muted text-muted-foreground"}`}>
+                          {STATUS_OPTIONS.find((o) => o.value === v.status)?.label ?? v.status}
+                        </span>
+                      </div>
+                      <h3 className="mt-1 text-sm font-bold">{v.nome}</h3>
+                      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span><span className="font-semibold text-foreground/80">Gestor:</span> {v.gestor}</span>
+                        <span><span className="font-semibold text-foreground/80">Recruiter:</span> {v.recruiter}</span>
+                        <span><span className="font-semibold text-foreground/80">Área:</span> {v.area ?? "—"}</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-3">
+                        <MetricBadge label="Abord." value={v.candidatos_abordados} />
+                        <MetricBadge label="People" value={v.candidatos_papo_people} />
+                        <MetricBadge label="Gestor" value={v.candidatos_papo_gestor} />
+                        <MetricBadge label="Case" value={v.tem_case ? v.candidatos_case : null} />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 md:items-end">
+                      <select
+                        value={v.status}
+                        onChange={(e) => updateStatus(v.id, e.target.value as VagaStatus)}
+                        className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac md:w-auto"
+                      >
+                        {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Ações explícitas */}
+                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+                    <ActionButton onClick={() => startEdit(v)} icon={<Pencil className="size-4" />} label="Editar" tone="default" />
+                    <ActionButton onClick={() => setOpenComentarios(open ? null : v.id)} icon={<MessageSquare className="size-4" />} label="Comentários" tone={open ? "active" : "default"} />
+                    <ActionButton
+                      onClick={() => fecharVaga(v)}
+                      disabled={v.status === "fechada"}
+                      icon={<CheckCircle2 className="size-4" />}
+                      label="Fechar vaga"
+                      tone="success"
+                    />
+                    <ActionButton
+                      onClick={() => congelarVaga(v)}
+                      icon={<Snowflake className="size-4" />}
+                      label={v.status === "congelada" ? "Atualizar motivo" : "Congelar vaga"}
+                      tone={v.status === "congelada" ? "active" : "lilac"}
+                    />
+                    <ActionButton onClick={() => remove(v.id)} icon={<Trash2 className="size-4" />} label="Excluir" tone="danger" />
+                  </div>
+
+                  {v.status === "congelada" && v.freeze_motivo && (
+                    <div className="mt-3 flex items-start gap-2 rounded-xl border border-brand-lilac/20 bg-brand-lilac/5 px-3 py-2 text-xs">
+                      <Snowflake className="mt-0.5 size-3.5 shrink-0 text-brand-lilac" />
+                      <div>
+                        <span className="font-bold uppercase tracking-wider text-brand-lilac">Vaga congelada — </span>
+                        <span className="text-foreground/90">{v.freeze_motivo}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {open && (
+                    <div className="mt-4 rounded-xl border border-border bg-muted/20 p-4">
+                      <VagaComentarios vagaCodigo={v.codigo} mode="ta" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </section>

@@ -362,14 +362,33 @@ function MinhasVagas() {
   }
 
   async function updateStatus(id: string, status: VagaStatus) {
-    setVagas((vs) => vs.map((v) => (v.id === id ? { ...v, status } : v)));
-    await supabase.from("vagas").update({ status }).eq("id", id);
+    setVagas((vs) => vs.map((v) => (v.id === id ? { ...v, status, freeze_motivo: status === "congelada" ? v.freeze_motivo : null } : v)));
+    const patch: { status: VagaStatus; freeze_motivo?: null } = { status };
+    if (status !== "congelada") patch.freeze_motivo = null;
+    await supabase.from("vagas").update(patch).eq("id", id);
   }
 
   async function fecharVaga(v: VagaRow) {
     if (v.status === "fechada") return;
     if (!confirm(`Fechar a vaga "${v.nome}"?`)) return;
     await updateStatus(v.id, "fechada");
+  }
+
+  async function congelarVaga(v: VagaRow) {
+    const motivo = window.prompt(
+      v.status === "congelada"
+        ? `Atualizar motivo do congelamento de "${v.nome}":`
+        : `Por que a vaga "${v.nome}" será congelada?`,
+      v.freeze_motivo ?? "",
+    );
+    if (motivo === null) return;
+    const motivoTrim = motivo.trim();
+    if (!motivoTrim) {
+      alert("É obrigatório informar um motivo para congelar a vaga.");
+      return;
+    }
+    setVagas((vs) => vs.map((x) => (x.id === v.id ? { ...x, status: "congelada", freeze_motivo: motivoTrim } : x)));
+    await supabase.from("vagas").update({ status: "congelada", freeze_motivo: motivoTrim }).eq("id", v.id);
   }
 
   async function remove(id: string) {

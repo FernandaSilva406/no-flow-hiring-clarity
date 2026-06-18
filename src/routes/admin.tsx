@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown, Pencil, CheckCircle2, Snowflake } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";

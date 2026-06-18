@@ -542,12 +542,32 @@ function MinhasVagas() {
                           >
                             <CheckCircle2 className="size-4" />
                           </button>
+                          <button
+                            onClick={() => congelarVaga(v)}
+                            title={v.status === "congelada" ? "Atualizar motivo do congelamento" : "Congelar vaga"}
+                            className={`rounded-lg p-1.5 hover:bg-brand-lilac/10 hover:text-brand-lilac ${v.status === "congelada" ? "text-brand-lilac" : "text-muted-foreground"}`}
+                          >
+                            <Snowflake className="size-4" />
+                          </button>
                           <button onClick={() => remove(v.id)} title="Excluir vaga" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
                             <Trash2 className="size-4" />
                           </button>
                         </div>
                       </td>
                     </tr>
+                    {v.status === "congelada" && v.freeze_motivo && (
+                      <tr key={`${v.id}-f`} className="border-t border-border bg-brand-lilac/5">
+                        <td colSpan={12} className="px-6 py-3">
+                          <div className="flex items-start gap-2 text-xs">
+                            <Snowflake className="mt-0.5 size-3.5 shrink-0 text-brand-lilac" />
+                            <div>
+                              <span className="font-bold uppercase tracking-wider text-brand-lilac">Vaga congelada — </span>
+                              <span className="text-foreground/90">{v.freeze_motivo}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     {open && (
                       <tr key={`${v.id}-c`} className="border-t border-border bg-muted/20">
                         <td colSpan={12} className="px-6 py-5">

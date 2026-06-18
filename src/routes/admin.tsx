@@ -442,7 +442,7 @@ function MinhasVagas() {
           {err && <p className="md:col-span-2 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
           <div className="md:col-span-2 flex justify-end">
             <button type="submit" disabled={saving} className="flex items-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-brand-glow disabled:opacity-60">
-              {saving && <Loader2 className="size-4 animate-spin" />} Salvar vaga
+              {saving && <Loader2 className="size-4 animate-spin" />} {editingId ? "Salvar alterações" : "Salvar vaga"}
             </button>
           </div>
         </form>

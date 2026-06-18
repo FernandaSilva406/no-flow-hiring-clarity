@@ -569,3 +569,46 @@ function Field({ label, required, children }: { label: string; required?: boolea
   );
 }
 
+function MetricBadge({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs">
+      <span className="font-semibold text-muted-foreground">{label}</span>
+      <span className="font-bold">{value ?? "—"}</span>
+    </div>
+  );
+}
+
+function ActionButton({
+  onClick,
+  disabled,
+  icon,
+  label,
+  tone,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  icon: React.ReactNode;
+  label: string;
+  tone: "default" | "success" | "danger" | "lilac" | "active";
+}) {
+  const toneClasses = {
+    default: "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
+    success: "border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/30",
+    danger: "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30",
+    lilac: "border-brand-lilac/30 text-brand-lilac hover:bg-brand-lilac/10",
+    active: "border-brand-lilac/40 bg-brand-lilac/10 text-brand-lilac",
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors disabled:opacity-40 ${toneClasses[tone]}`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+

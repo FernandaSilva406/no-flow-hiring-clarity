@@ -29,6 +29,7 @@ export type VagaRow = {
   candidatos_papo_gestor: number;
   candidatos_case: number;
   status: VagaStatus;
+  freeze_motivo: string | null;
   created_at: string;
   updated_at: string;
 };

@@ -507,9 +507,26 @@ function MinhasVagas() {
                         </button>
                       </td>
                       <td className="px-6 py-3 text-right">
-                        <button onClick={() => remove(v.id)} className="text-muted-foreground hover:text-destructive">
-                          <Trash2 className="size-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => startEdit(v)}
+                            title="Editar vaga"
+                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <Pencil className="size-4" />
+                          </button>
+                          <button
+                            onClick={() => fecharVaga(v)}
+                            disabled={v.status === "fechada"}
+                            title={v.status === "fechada" ? "Vaga já fechada" : "Fechar vaga"}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-success/10 hover:text-success disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+                          >
+                            <CheckCircle2 className="size-4" />
+                          </button>
+                          <button onClick={() => remove(v.id)} title="Excluir vaga" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {open && (

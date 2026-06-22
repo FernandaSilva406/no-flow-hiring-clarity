@@ -5,7 +5,7 @@ import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
 import { useHasRole } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { STATUS_OPTIONS, type VagaRow, type VagaStatus } from "@/lib/vagas-db";
+import { STATUS_OPTIONS, statusLabel, type VagaRow, type VagaStatus } from "@/lib/vagas-db";
 import { VagaComentarios } from "@/components/vaga-comentarios";
 
 
@@ -72,16 +72,76 @@ const STAGE_TIMES = [
   { stage: "Proposta", days: 3 },
 ];
 
+// Status considerados "aprovados pelo financeiro" (já passaram pela aprovação financeira)
+const STATUS_POS_FINANCEIRO: VagaStatus[] = [
+  "hunting",
+  "papo_people",
+  "case",
+  "papo_gestor",
+  "proposta",
+  "fechada",
+  "congelada",
+];
+const STATUS_ATIVAS: VagaStatus[] = ["hunting", "papo_people", "case", "papo_gestor", "proposta"];
+
 function AdminPage() {
   const [areaFiltro, setAreaFiltro] = useState<string>("Todas");
-  const areas = useMemo(() => ["Todas", ...Array.from(new Set(VAGAS.map((v) => v.area)))], []);
-  const vagasFiltradas = areaFiltro === "Todas" ? VAGAS : VAGAS.filter((v) => v.area === areaFiltro);
+  const [dbVagas, setDbVagas] = useState<VagaRow[]>([]);
 
-  const stages = ["Hunting", "Entrevistas", "Proposta", "Fechadas"];
-  const kanbanCols = stages.map((s, i) => ({
-    nome: s,
-    vagas: vagasFiltradas.filter((_, idx) => idx % stages.length === i),
-  }));
+  useEffect(() => {
+    let alive = true;
+    async function fetchVagas() {
+      const { data } = await supabase
+        .from("vagas")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (alive && data) setDbVagas(data as VagaRow[]);
+    }
+    fetchVagas();
+    const channel = supabase
+      .channel("admin-vagas")
+      .on("postgres_changes", { event: "*", schema: "public", table: "vagas" }, () => fetchVagas())
+      .subscribe();
+    return () => {
+      alive = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const vagasAprovadasFin = useMemo(
+    () => dbVagas.filter((v) => STATUS_POS_FINANCEIRO.includes(v.status)),
+    [dbVagas],
+  );
+
+  const areas = useMemo(() => {
+    const set = new Set<string>();
+    VAGAS.forEach((v) => set.add(v.area));
+    dbVagas.forEach((v) => v.area && set.add(v.area));
+    return ["Todas", ...Array.from(set)];
+  }, [dbVagas]);
+
+  const vagasFiltradas = areaFiltro === "Todas" ? VAGAS : VAGAS.filter((v) => v.area === areaFiltro);
+  const dbVagasFiltradas = useMemo(
+    () =>
+      areaFiltro === "Todas"
+        ? vagasAprovadasFin
+        : vagasAprovadasFin.filter((v) => (v.area ?? "") === areaFiltro),
+    [vagasAprovadasFin, areaFiltro],
+  );
+  const dbAtivas = useMemo(
+    () => dbVagasFiltradas.filter((v) => STATUS_ATIVAS.includes(v.status)),
+    [dbVagasFiltradas],
+  );
+
+  const kanbanCols: { nome: string; vagas: VagaRow[] }[] = [
+    { nome: "Hunting", vagas: dbAtivas.filter((v) => v.status === "hunting") },
+    {
+      nome: "Entrevistas",
+      vagas: dbAtivas.filter((v) => v.status === "papo_people" || v.status === "case" || v.status === "papo_gestor"),
+    },
+    { nome: "Proposta", vagas: dbAtivas.filter((v) => v.status === "proposta") },
+    { nome: "Fechadas", vagas: dbVagasFiltradas.filter((v) => v.status === "fechada") },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -189,24 +249,30 @@ function AdminPage() {
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">{col.vagas.length}</span>
                 </div>
                 <div className="space-y-2">
-                  {col.vagas.map((v) => (
-                    <Link
-                      key={v.codigo}
-                      to="/vaga/$codigo"
-                      params={{ codigo: v.codigo }}
-                      className="block rounded-xl border border-border bg-background/60 p-3 transition-all hover:border-brand-lilac/40 hover:shadow-soft"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-semibold leading-tight">{v.nome}</span>
-                        <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
-                      </div>
-                      <div className="mt-1 font-mono text-[10px] text-muted-foreground">{v.codigo}</div>
-                      <div className="mt-3 flex items-center justify-between text-[10px]">
-                        <span className="text-muted-foreground">{v.diasAberta}d aberta</span>
-                        <span className={`font-bold ${v.slaPercent < 80 ? "text-destructive" : "text-success"}`}>SLA {v.slaPercent}%</span>
-                      </div>
-                    </Link>
-                  ))}
+                  {col.vagas.map((v) => {
+                    const diasAberta = Math.max(
+                      0,
+                      Math.floor((Date.now() - new Date(v.created_at).getTime()) / 86400000),
+                    );
+                    return (
+                      <Link
+                        key={v.id}
+                        to="/vaga/$codigo"
+                        params={{ codigo: v.codigo }}
+                        className="block rounded-xl border border-border bg-background/60 p-3 transition-all hover:border-brand-lilac/40 hover:shadow-soft"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-sm font-semibold leading-tight">{v.nome}</span>
+                          <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
+                        </div>
+                        <div className="mt-1 font-mono text-[10px] text-muted-foreground">{v.codigo}</div>
+                        <div className="mt-3 flex items-center justify-between text-[10px]">
+                          <span className="text-muted-foreground">{diasAberta}d aberta</span>
+                          <span className="font-bold text-brand-lilac">{statusLabel(v.status)}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                   {col.vagas.length === 0 && (
                     <p className="py-6 text-center text-xs text-muted-foreground">Nenhuma vaga</p>
                   )}
@@ -220,6 +286,7 @@ function AdminPage() {
         <section className="mt-8 rounded-3xl border border-border bg-card shadow-soft">
           <div className="border-b border-border p-6">
             <h2 className="font-bold">Todas as vagas</h2>
+            <p className="text-xs text-muted-foreground">Vagas aprovadas pelo financeiro.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -230,26 +297,37 @@ function AdminPage() {
                   <th className="px-6 py-3 text-left font-bold">Área</th>
                   <th className="px-6 py-3 text-left font-bold">Recruiter</th>
                   <th className="px-6 py-3 text-right font-bold">Dias</th>
-                  <th className="px-6 py-3 text-right font-bold">SLA</th>
+                  <th className="px-6 py-3 text-right font-bold">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {vagasFiltradas.map((v) => (
-                  <tr key={v.codigo} className="border-t border-border transition-colors hover:bg-muted/30">
-                    <td className="px-6 py-4 font-mono text-xs text-brand-lilac">
-                      <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">
-                        {v.codigo}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 font-medium">{v.nome}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{v.area}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{v.recruiter}</td>
-                    <td className="px-6 py-4 text-right font-semibold">{v.diasAberta}</td>
-                    <td className={`px-6 py-4 text-right font-bold ${v.slaPercent < 80 ? "text-destructive" : "text-success"}`}>
-                      {v.slaPercent}%
+                {dbVagasFiltradas.map((v) => {
+                  const diasAberta = Math.max(
+                    0,
+                    Math.floor((Date.now() - new Date(v.created_at).getTime()) / 86400000),
+                  );
+                  return (
+                    <tr key={v.id} className="border-t border-border transition-colors hover:bg-muted/30">
+                      <td className="px-6 py-4 font-mono text-xs text-brand-lilac">
+                        <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">
+                          {v.codigo}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 font-medium">{v.nome}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{v.area ?? "—"}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{v.recruiter}</td>
+                      <td className="px-6 py-4 text-right font-semibold">{diasAberta}</td>
+                      <td className="px-6 py-4 text-right font-bold text-brand-lilac">{statusLabel(v.status)}</td>
+                    </tr>
+                  );
+                })}
+                {dbVagasFiltradas.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                      Nenhuma vaga aprovada pelo financeiro ainda.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

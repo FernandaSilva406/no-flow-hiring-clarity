@@ -504,7 +504,7 @@ function MinhasVagas() {
                       <select
                         value={v.status}
                         onChange={(e) => updateStatus(v.id, e.target.value as VagaStatus)}
-                        className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac md:w-auto"
+                        className="w-full cursor-pointer rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac md:w-auto"
                       >
                         {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </select>
@@ -603,7 +603,7 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors disabled:opacity-40 ${toneClasses[tone]}`}
+      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors disabled:opacity-40 ${toneClasses[tone]}`}
     >
       {icon}
       {label}

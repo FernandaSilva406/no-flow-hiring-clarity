@@ -249,24 +249,30 @@ function AdminPage() {
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">{col.vagas.length}</span>
                 </div>
                 <div className="space-y-2">
-                  {col.vagas.map((v) => (
-                    <Link
-                      key={v.codigo}
-                      to="/vaga/$codigo"
-                      params={{ codigo: v.codigo }}
-                      className="block rounded-xl border border-border bg-background/60 p-3 transition-all hover:border-brand-lilac/40 hover:shadow-soft"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-semibold leading-tight">{v.nome}</span>
-                        <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
-                      </div>
-                      <div className="mt-1 font-mono text-[10px] text-muted-foreground">{v.codigo}</div>
-                      <div className="mt-3 flex items-center justify-between text-[10px]">
-                        <span className="text-muted-foreground">{v.diasAberta}d aberta</span>
-                        <span className={`font-bold ${v.slaPercent < 80 ? "text-destructive" : "text-success"}`}>SLA {v.slaPercent}%</span>
-                      </div>
-                    </Link>
-                  ))}
+                  {col.vagas.map((v) => {
+                    const diasAberta = Math.max(
+                      0,
+                      Math.floor((Date.now() - new Date(v.created_at).getTime()) / 86400000),
+                    );
+                    return (
+                      <Link
+                        key={v.id}
+                        to="/vaga/$codigo"
+                        params={{ codigo: v.codigo }}
+                        className="block rounded-xl border border-border bg-background/60 p-3 transition-all hover:border-brand-lilac/40 hover:shadow-soft"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-sm font-semibold leading-tight">{v.nome}</span>
+                          <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
+                        </div>
+                        <div className="mt-1 font-mono text-[10px] text-muted-foreground">{v.codigo}</div>
+                        <div className="mt-3 flex items-center justify-between text-[10px]">
+                          <span className="text-muted-foreground">{diasAberta}d aberta</span>
+                          <span className="font-bold text-brand-lilac">{statusLabel(v.status)}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                   {col.vagas.length === 0 && (
                     <p className="py-6 text-center text-xs text-muted-foreground">Nenhuma vaga</p>
                   )}

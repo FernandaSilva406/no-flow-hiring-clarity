@@ -72,16 +72,76 @@ const STAGE_TIMES = [
   { stage: "Proposta", days: 3 },
 ];
 
+// Status considerados "aprovados pelo financeiro" (já passaram pela aprovação financeira)
+const STATUS_POS_FINANCEIRO: VagaStatus[] = [
+  "hunting",
+  "papo_people",
+  "case",
+  "papo_gestor",
+  "proposta",
+  "fechada",
+  "congelada",
+];
+const STATUS_ATIVAS: VagaStatus[] = ["hunting", "papo_people", "case", "papo_gestor", "proposta"];
+
 function AdminPage() {
   const [areaFiltro, setAreaFiltro] = useState<string>("Todas");
-  const areas = useMemo(() => ["Todas", ...Array.from(new Set(VAGAS.map((v) => v.area)))], []);
-  const vagasFiltradas = areaFiltro === "Todas" ? VAGAS : VAGAS.filter((v) => v.area === areaFiltro);
+  const [dbVagas, setDbVagas] = useState<VagaRow[]>([]);
 
-  const stages = ["Hunting", "Entrevistas", "Proposta", "Fechadas"];
-  const kanbanCols = stages.map((s, i) => ({
-    nome: s,
-    vagas: vagasFiltradas.filter((_, idx) => idx % stages.length === i),
-  }));
+  useEffect(() => {
+    let alive = true;
+    async function fetchVagas() {
+      const { data } = await supabase
+        .from("vagas")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (alive && data) setDbVagas(data as VagaRow[]);
+    }
+    fetchVagas();
+    const channel = supabase
+      .channel("admin-vagas")
+      .on("postgres_changes", { event: "*", schema: "public", table: "vagas" }, () => fetchVagas())
+      .subscribe();
+    return () => {
+      alive = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const vagasAprovadasFin = useMemo(
+    () => dbVagas.filter((v) => STATUS_POS_FINANCEIRO.includes(v.status)),
+    [dbVagas],
+  );
+
+  const areas = useMemo(() => {
+    const set = new Set<string>();
+    VAGAS.forEach((v) => set.add(v.area));
+    dbVagas.forEach((v) => v.area && set.add(v.area));
+    return ["Todas", ...Array.from(set)];
+  }, [dbVagas]);
+
+  const vagasFiltradas = areaFiltro === "Todas" ? VAGAS : VAGAS.filter((v) => v.area === areaFiltro);
+  const dbVagasFiltradas = useMemo(
+    () =>
+      areaFiltro === "Todas"
+        ? vagasAprovadasFin
+        : vagasAprovadasFin.filter((v) => (v.area ?? "") === areaFiltro),
+    [vagasAprovadasFin, areaFiltro],
+  );
+  const dbAtivas = useMemo(
+    () => dbVagasFiltradas.filter((v) => STATUS_ATIVAS.includes(v.status)),
+    [dbVagasFiltradas],
+  );
+
+  const kanbanCols: { nome: string; vagas: VagaRow[] }[] = [
+    { nome: "Hunting", vagas: dbAtivas.filter((v) => v.status === "hunting") },
+    {
+      nome: "Entrevistas",
+      vagas: dbAtivas.filter((v) => v.status === "papo_people" || v.status === "case" || v.status === "papo_gestor"),
+    },
+    { nome: "Proposta", vagas: dbAtivas.filter((v) => v.status === "proposta") },
+    { nome: "Fechadas", vagas: dbVagasFiltradas.filter((v) => v.status === "fechada") },
+  ];
 
   return (
     <div className="min-h-screen">

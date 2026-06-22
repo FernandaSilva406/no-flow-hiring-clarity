@@ -286,6 +286,7 @@ function AdminPage() {
         <section className="mt-8 rounded-3xl border border-border bg-card shadow-soft">
           <div className="border-b border-border p-6">
             <h2 className="font-bold">Todas as vagas</h2>
+            <p className="text-xs text-muted-foreground">Vagas aprovadas pelo financeiro.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -296,26 +297,37 @@ function AdminPage() {
                   <th className="px-6 py-3 text-left font-bold">Área</th>
                   <th className="px-6 py-3 text-left font-bold">Recruiter</th>
                   <th className="px-6 py-3 text-right font-bold">Dias</th>
-                  <th className="px-6 py-3 text-right font-bold">SLA</th>
+                  <th className="px-6 py-3 text-right font-bold">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {vagasFiltradas.map((v) => (
-                  <tr key={v.codigo} className="border-t border-border transition-colors hover:bg-muted/30">
-                    <td className="px-6 py-4 font-mono text-xs text-brand-lilac">
-                      <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">
-                        {v.codigo}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 font-medium">{v.nome}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{v.area}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{v.recruiter}</td>
-                    <td className="px-6 py-4 text-right font-semibold">{v.diasAberta}</td>
-                    <td className={`px-6 py-4 text-right font-bold ${v.slaPercent < 80 ? "text-destructive" : "text-success"}`}>
-                      {v.slaPercent}%
+                {dbVagasFiltradas.map((v) => {
+                  const diasAberta = Math.max(
+                    0,
+                    Math.floor((Date.now() - new Date(v.created_at).getTime()) / 86400000),
+                  );
+                  return (
+                    <tr key={v.id} className="border-t border-border transition-colors hover:bg-muted/30">
+                      <td className="px-6 py-4 font-mono text-xs text-brand-lilac">
+                        <Link to="/vaga/$codigo" params={{ codigo: v.codigo }} className="hover:underline">
+                          {v.codigo}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 font-medium">{v.nome}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{v.area ?? "—"}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{v.recruiter}</td>
+                      <td className="px-6 py-4 text-right font-semibold">{diasAberta}</td>
+                      <td className="px-6 py-4 text-right font-bold text-brand-lilac">{statusLabel(v.status)}</td>
+                    </tr>
+                  );
+                })}
+                {dbVagasFiltradas.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                      Nenhuma vaga aprovada pelo financeiro ainda.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

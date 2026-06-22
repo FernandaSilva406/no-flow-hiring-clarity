@@ -172,7 +172,7 @@ function AdminPage() {
 
         {/* KPIs */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KpiCard label="Tempo médio fechamento" value="32" unit="dias" delta="-12% vs mês ant." trend="down" />
+          <KpiCard label="SLA médio fechamento" value="30" unit="dias" delta="meta da operação" trend="flat" />
           <KpiCard label="Vagas abertas" value={String(vagasFiltradas.length)} unit="" delta="8 em fase final" trend="flat" />
           <KpiCard label="Taxa de aceite" value="94" unit="%" delta="+3pp" trend="up" />
           <KpiCard label="Maior gargalo" value="Papo Gestor" unit="" delta="média 18 dias" trend="warn" highlight />

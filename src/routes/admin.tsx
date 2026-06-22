@@ -504,7 +504,7 @@ function MinhasVagas() {
                       <select
                         value={v.status}
                         onChange={(e) => updateStatus(v.id, e.target.value as VagaStatus)}
-                        className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac md:w-auto"
+                        className="w-full cursor-pointer rounded-lg border border-border bg-background px-2 py-1 text-xs font-semibold outline-none focus:border-brand-lilac md:w-auto"
                       >
                         {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </select>

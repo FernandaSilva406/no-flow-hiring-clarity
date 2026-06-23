@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Search, Loader2, AlertCircle, ArrowRight } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { findVaga, VAGAS } from "@/lib/mock-vagas";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,23 +31,27 @@ function SearchPage() {
     } catch {}
   }, []);
 
-  const buscar = (valor: string) => {
+  const buscar = async (valor: string) => {
     const v = valor.trim();
     if (!v) return;
     setErro(null);
     setLoading(true);
-    setTimeout(() => {
-      const vaga = findVaga(v);
-      if (!vaga) {
-        setLoading(false);
-        setErro(`Nenhuma vaga encontrada para "${v}". Tente: ${VAGAS[0].codigo}`);
-        return;
-      }
-      const novos = [vaga.codigo, ...recentes.filter((c) => c !== vaga.codigo)].slice(0, 5);
-      setRecentes(novos);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(novos)); } catch {}
-      navigate({ to: "/vaga/$codigo", params: { codigo: vaga.codigo } });
-    }, 600);
+    // 1) Tenta no banco (vagas reais, inclusive recém-criadas em "abertura")
+    const { data } = await supabase
+      .from("vagas")
+      .select("codigo")
+      .ilike("codigo", v)
+      .maybeSingle();
+    const codigoEncontrado = data?.codigo ?? findVaga(v)?.codigo ?? null;
+    if (!codigoEncontrado) {
+      setLoading(false);
+      setErro(`Nenhuma vaga encontrada para "${v}". Tente: ${VAGAS[0].codigo}`);
+      return;
+    }
+    const novos = [codigoEncontrado, ...recentes.filter((c) => c !== codigoEncontrado)].slice(0, 5);
+    setRecentes(novos);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(novos)); } catch {}
+    navigate({ to: "/vaga/$codigo", params: { codigo: codigoEncontrado } });
   };
 
   return (

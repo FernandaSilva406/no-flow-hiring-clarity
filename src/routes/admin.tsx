@@ -213,9 +213,8 @@ function AdminPage() {
             <h2 className="mb-4 font-bold">Performance por recruiter</h2>
             <div className="space-y-3">
               {[
-                { nome: "Ana Mendes", vagas: 6, sla: 92 },
-                { nome: "Marcos Vinícius", vagas: 4, sla: 88 },
-                { nome: "Juliana Reis", vagas: 3, sla: 96 },
+                { nome: "Fernanda Silva", vagas: 6, sla: 92 },
+                { nome: "Lilian Borges", vagas: 4, sla: 88 },
               ].map((r) => (
                 <div key={r.nome} className="rounded-2xl border border-border bg-background/40 p-4">
                   <div className="flex items-center justify-between">

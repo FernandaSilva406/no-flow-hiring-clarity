@@ -213,22 +213,40 @@ function AdminPage() {
             <h2 className="mb-4 font-bold">Performance por recruiter</h2>
             <div className="space-y-3">
               {[
-                { nome: "Fernanda Silva", vagas: 6, sla: 92 },
-                { nome: "Lilian Borges", vagas: 4, sla: 88 },
-              ].map((r) => (
-                <div key={r.nome} className="rounded-2xl border border-border bg-background/40 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm">{r.nome}</span>
-                    <span className="text-xs text-muted-foreground">{r.vagas} vagas</span>
-                  </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-gradient-brand" style={{ width: `${r.sla}%` }} />
+                { nome: "Fernanda Silva", sla: 92 },
+                { nome: "Lilian Borges", sla: 88 },
+              ].map((r) => {
+                const vagasDoRecruiter = dbVagas.filter((v) => v.recruiter === r.nome);
+                return (
+                  <div key={r.nome} className="rounded-2xl border border-border bg-background/40 p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm">{r.nome}</span>
+                      <span className="text-xs text-muted-foreground">{vagasDoRecruiter.length} vagas</span>
                     </div>
-                    <span className="text-xs font-bold">{r.sla}%</span>
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-gradient-brand" style={{ width: `${r.sla}%` }} />
+                      </div>
+                      <span className="text-xs font-bold">{r.sla}%</span>
+                    </div>
+                    {vagasDoRecruiter.length > 0 && (
+                      <div className="mt-3 space-y-1.5 border-t border-border pt-3">
+                        {vagasDoRecruiter.map((v) => (
+                          <Link
+                            key={v.id}
+                            to="/vaga/$codigo"
+                            params={{ codigo: v.codigo }}
+                            className="flex items-center justify-between rounded-lg bg-background/60 px-2.5 py-1.5 text-xs transition-colors hover:bg-background"
+                          >
+                            <span className="font-medium">{v.nome}</span>
+                            <span className="font-mono text-muted-foreground">{v.codigo}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

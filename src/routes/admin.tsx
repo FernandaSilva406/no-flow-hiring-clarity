@@ -120,6 +120,15 @@ function AdminPage() {
     return ["Todas", ...Array.from(set)];
   }, [dbVagas]);
 
+  const recrutadoresUnicos = useMemo(() => {
+    const nomes = new Set<string>();
+    dbVagas.forEach((v) => nomes.add(v.recruiter));
+    return Array.from(nomes).map((nome) => ({
+      nome,
+      sla: nome === "Fernanda Silva" ? 92 : nome === "Lilian Borges" ? 88 : 0,
+    }));
+  }, [dbVagas]);
+
   const vagasFiltradas = areaFiltro === "Todas" ? VAGAS : VAGAS.filter((v) => v.area === areaFiltro);
   const dbVagasFiltradas = useMemo(
     () =>
@@ -212,10 +221,7 @@ function AdminPage() {
           <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
             <h2 className="mb-4 font-bold">Performance por recruiter</h2>
             <div className="space-y-3">
-              {[
-                { nome: "Fernanda Silva", sla: 92 },
-                { nome: "Lilian Borges", sla: 88 },
-              ].map((r) => {
+              {recrutadoresUnicos.map((r) => {
                 const vagasDoRecruiter = dbVagas.filter((v) => v.recruiter === r.nome);
                 return (
                   <div key={r.nome} className="rounded-2xl border border-border bg-background/40 p-4">

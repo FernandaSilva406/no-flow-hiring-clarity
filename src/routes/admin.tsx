@@ -219,7 +219,7 @@ function AdminPage() {
           </div>
 
           <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-            <h2 className="mb-4 font-bold">Performance por recruiter</h2>
+            <h2 className="mb-4 font-bold">Vaga por recruiter</h2>
             <div className="space-y-3">
               {recrutadoresUnicos.map((r) => {
                 const vagasDoRecruiter = dbVagas.filter((v) => v.recruiter === r.nome);

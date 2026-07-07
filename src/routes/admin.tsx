@@ -638,7 +638,7 @@ function MinhasVagas() {
                       tone="success"
                     />
                     <ActionButton
-                      onClick={() => congelarVaga(v)}
+                      onClick={() => openFreezeModal(v)}
                       icon={<Snowflake className="size-4" />}
                       label={v.status === "congelada" ? "Atualizar motivo" : "Congelar vaga"}
                       tone={v.status === "congelada" ? "active" : "lilac"}

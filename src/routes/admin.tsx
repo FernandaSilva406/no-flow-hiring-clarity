@@ -387,6 +387,9 @@ function MinhasVagas() {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [openComentarios, setOpenComentarios] = useState<string | null>(null);
+  const [freezeModalOpen, setFreezeModalOpen] = useState(false);
+  const [freezeVaga, setFreezeVaga] = useState<VagaRow | null>(null);
+  const [freezeMotivo, setFreezeMotivo] = useState("");
 
   const emptyForm = {
     codigo: "",

@@ -478,21 +478,32 @@ function MinhasVagas() {
     await updateStatus(v.id, "fechada");
   }
 
-  async function congelarVaga(v: VagaRow) {
-    const motivo = window.prompt(
-      v.status === "congelada"
-        ? `Atualizar motivo do congelamento de "${v.nome}":`
-        : `Por que a vaga "${v.nome}" será congelada?`,
-      v.freeze_motivo ?? "",
-    );
-    if (motivo === null) return;
-    const motivoTrim = motivo.trim();
+  function openFreezeModal(v: VagaRow) {
+    setFreezeVaga(v);
+    setFreezeMotivo(v.freeze_motivo ?? "");
+    setFreezeModalOpen(true);
+  }
+
+  function cancelFreeze() {
+    setFreezeModalOpen(false);
+    setFreezeVaga(null);
+    setFreezeMotivo("");
+  }
+
+  async function confirmFreeze() {
+    if (!freezeVaga) return;
+    const motivoTrim = freezeMotivo.trim();
     if (!motivoTrim) {
       alert("É obrigatório informar um motivo para congelar a vaga.");
       return;
     }
-    setVagas((vs) => vs.map((x) => (x.id === v.id ? { ...x, status: "congelada", freeze_motivo: motivoTrim } : x)));
-    await supabase.from("vagas").update({ status: "congelada", freeze_motivo: motivoTrim }).eq("id", v.id);
+    setVagas((vs) =>
+      vs.map((x) => (x.id === freezeVaga.id ? { ...x, status: "congelada", freeze_motivo: motivoTrim } : x)),
+    );
+    await supabase.from("vagas").update({ status: "congelada", freeze_motivo: motivoTrim }).eq("id", freezeVaga.id);
+    setFreezeModalOpen(false);
+    setFreezeVaga(null);
+    setFreezeMotivo("");
   }
 
   async function remove(id: string) {

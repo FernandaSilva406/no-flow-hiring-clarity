@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown, Pencil, CheckCircle2, Snowflake } from "lucide-react";
+import { Download, TrendingDown, TrendingUp, AlertTriangle, Filter, ExternalLink, Lock, Plus, Loader2, Trash2, MessageSquare, ChevronDown, Pencil, CheckCircle2, Snowflake, Sun } from "lucide-react";
 import { NoFlowNav } from "@/components/no-flow-nav";
 import { VAGAS } from "@/lib/mock-vagas";
 import { useHasRole } from "@/lib/use-auth";
@@ -643,6 +643,14 @@ function MinhasVagas() {
                       label={v.status === "congelada" ? "Atualizar motivo" : "Congelar vaga"}
                       tone={v.status === "congelada" ? "active" : "lilac"}
                     />
+                    {v.status === "congelada" && (
+                      <ActionButton
+                        onClick={() => updateStatus(v.id, "abertura")}
+                        icon={<Sun className="size-4" />}
+                        label="Descongelar vaga"
+                        tone="success"
+                      />
+                    )}
                     <ActionButton onClick={() => remove(v.id)} icon={<Trash2 className="size-4" />} label="Excluir" tone="danger" />
                   </div>
 

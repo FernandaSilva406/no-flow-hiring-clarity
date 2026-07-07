@@ -667,6 +667,37 @@ function MinhasVagas() {
           </div>
         )}
       </div>
+
+      {freezeModalOpen && freezeVaga && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <h3 className="text-center text-sm font-semibold">
+              Para congelar a vaga é necessário informar o motivo a seguir.
+            </h3>
+            <textarea
+              value={freezeMotivo}
+              onChange={(e) => setFreezeMotivo(e.target.value)}
+              placeholder="Digite o motivo..."
+              rows={4}
+              className="mt-4 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand-lilac resize-none"
+            />
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={confirmFreeze}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-brand px-4 py-2.5 text-sm font-semibold text-white shadow-brand-glow"
+              >
+                <Snowflake className="size-4" /> Congelar
+              </button>
+              <button
+                onClick={cancelFreeze}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

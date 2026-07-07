@@ -387,6 +387,9 @@ function MinhasVagas() {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [openComentarios, setOpenComentarios] = useState<string | null>(null);
+  const [freezeModalOpen, setFreezeModalOpen] = useState(false);
+  const [freezeVaga, setFreezeVaga] = useState<VagaRow | null>(null);
+  const [freezeMotivo, setFreezeMotivo] = useState("");
 
   const emptyForm = {
     codigo: "",
@@ -475,21 +478,32 @@ function MinhasVagas() {
     await updateStatus(v.id, "fechada");
   }
 
-  async function congelarVaga(v: VagaRow) {
-    const motivo = window.prompt(
-      v.status === "congelada"
-        ? `Atualizar motivo do congelamento de "${v.nome}":`
-        : `Por que a vaga "${v.nome}" será congelada?`,
-      v.freeze_motivo ?? "",
-    );
-    if (motivo === null) return;
-    const motivoTrim = motivo.trim();
+  function openFreezeModal(v: VagaRow) {
+    setFreezeVaga(v);
+    setFreezeMotivo(v.freeze_motivo ?? "");
+    setFreezeModalOpen(true);
+  }
+
+  function cancelFreeze() {
+    setFreezeModalOpen(false);
+    setFreezeVaga(null);
+    setFreezeMotivo("");
+  }
+
+  async function confirmFreeze() {
+    if (!freezeVaga) return;
+    const motivoTrim = freezeMotivo.trim();
     if (!motivoTrim) {
       alert("É obrigatório informar um motivo para congelar a vaga.");
       return;
     }
-    setVagas((vs) => vs.map((x) => (x.id === v.id ? { ...x, status: "congelada", freeze_motivo: motivoTrim } : x)));
-    await supabase.from("vagas").update({ status: "congelada", freeze_motivo: motivoTrim }).eq("id", v.id);
+    setVagas((vs) =>
+      vs.map((x) => (x.id === freezeVaga.id ? { ...x, status: "congelada", freeze_motivo: motivoTrim } : x)),
+    );
+    await supabase.from("vagas").update({ status: "congelada", freeze_motivo: motivoTrim }).eq("id", freezeVaga.id);
+    setFreezeModalOpen(false);
+    setFreezeVaga(null);
+    setFreezeMotivo("");
   }
 
   async function remove(id: string) {
@@ -624,7 +638,7 @@ function MinhasVagas() {
                       tone="success"
                     />
                     <ActionButton
-                      onClick={() => congelarVaga(v)}
+                      onClick={() => openFreezeModal(v)}
                       icon={<Snowflake className="size-4" />}
                       label={v.status === "congelada" ? "Atualizar motivo" : "Congelar vaga"}
                       tone={v.status === "congelada" ? "active" : "lilac"}
@@ -653,6 +667,37 @@ function MinhasVagas() {
           </div>
         )}
       </div>
+
+      {freezeModalOpen && freezeVaga && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <h3 className="text-center text-sm font-semibold">
+              Para congelar a vaga é necessário informar o motivo a seguir.
+            </h3>
+            <textarea
+              value={freezeMotivo}
+              onChange={(e) => setFreezeMotivo(e.target.value)}
+              placeholder="Digite o motivo..."
+              rows={4}
+              className="mt-4 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand-lilac resize-none"
+            />
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={confirmFreeze}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-brand px-4 py-2.5 text-sm font-semibold text-white shadow-brand-glow"
+              >
+                <Snowflake className="size-4" /> Congelar
+              </button>
+              <button
+                onClick={cancelFreeze}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

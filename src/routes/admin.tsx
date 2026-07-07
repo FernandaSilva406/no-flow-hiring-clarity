@@ -643,6 +643,14 @@ function MinhasVagas() {
                       label={v.status === "congelada" ? "Atualizar motivo" : "Congelar vaga"}
                       tone={v.status === "congelada" ? "active" : "lilac"}
                     />
+                    {v.status === "congelada" && (
+                      <ActionButton
+                        onClick={() => updateStatus(v.id, "abertura")}
+                        icon={<Sun className="size-4" />}
+                        label="Descongelar vaga"
+                        tone="success"
+                      />
+                    )}
                     <ActionButton onClick={() => remove(v.id)} icon={<Trash2 className="size-4" />} label="Excluir" tone="danger" />
                   </div>
 
